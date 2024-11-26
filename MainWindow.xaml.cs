@@ -94,6 +94,9 @@ namespace LeagueSpellTracker
             this.Left = _config.WindowLeft;
             this.Top = _config.WindowTop;
             
+            // TopMost設定を適用
+            this.Topmost = _config.TopMost;
+            
             _isLoadingConfig = false;
         }
 
@@ -727,6 +730,13 @@ namespace LeagueSpellTracker
             {
                 // クリップボードへのアクセスが失敗した場合は何もしない
             }
+        }
+
+        private void TopMost_Changed(object sender, RoutedEventArgs e)
+        {
+            _config.TopMost = topMostCheckBox.IsChecked ?? false;
+            this.Topmost = _config.TopMost;
+            _config.Save();
         }
     }
 } 

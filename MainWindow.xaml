@@ -231,6 +231,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!-- スケール設定 -->
@@ -269,7 +270,7 @@
                                   FontSize="12"/>
                     </Grid>
 
-                    <!-- MM:SS��式チェックボックス -->
+                    <!-- MM:SS式チェックボックス -->
                     <CheckBox Grid.Row="2" 
                               x:Name="minuteFormatCheckBox" 
                               Content="MM:SS形式で表示" 
@@ -289,8 +290,18 @@
                               Foreground="White"
                               Margin="0,0,0,10"/>
 
+                    <!-- フラッシュ可能時間の表示位置チェックボックス -->
+                    <CheckBox Grid.Row="4" 
+                              x:Name="topMostCheckBox" 
+                              Content="常に最前面に表示" 
+                              IsChecked="{Binding TopMost}" 
+                              Checked="TopMost_Changed"
+                              Unchecked="TopMost_Changed"
+                              Foreground="White"
+                              Margin="0,0,0,10"/>
+
                     <!-- 保存ボタン -->
-                    <Button Grid.Row="4" 
+                    <Button Grid.Row="5" 
                             Content="Save Settings" 
                             Click="SaveConfig_Click"
                             Margin="0,10,0,10"
@@ -300,7 +311,7 @@
                             Height="25"/>
 
                     <!-- 終了ボタン -->
-                    <Button Grid.Row="5" 
+                    <Button Grid.Row="6" 
                             Content="終了"
                             Click="BtnClose_Click"
                             Height="30"

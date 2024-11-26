@@ -11,6 +11,7 @@ namespace LeagueSpellTracker
         public double WindowTop { get; set; } = 100;
         public bool UseMinuteFormat { get; set; } = false;
         public bool ShowIngameTime { get; set; } = false;
+        public bool TopMost { get; set; } = false;
 
         private static string ConfigPath => Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
