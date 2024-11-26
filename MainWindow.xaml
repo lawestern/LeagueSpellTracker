@@ -1,0 +1,281 @@
+<Window x:Class="LeagueSpellTracker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        Title="League Spell Tracker" 
+        ResizeMode="CanMinimize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Padding="0"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        Closing="Window_Closing">
+
+    <Grid>
+        <Viewbox x:Name="mainViewbox" 
+                 Stretch="Uniform"
+                 Margin="0">
+            <Grid x:Name="LayoutRoot" 
+                  Width="166"
+                  Height="340"
+                  Background="#80202020">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="64"/>
+                    <RowDefinition Height="64"/>
+                    <RowDefinition Height="64"/>
+                    <RowDefinition Height="64"/>
+                    <RowDefinition Height="64"/>
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="24"/>
+                    <!-- レーンアイコン -->
+                    <ColumnDefinition Width="64"/>
+                    <!-- フラッシュボタン（マージン含む） -->
+                    <ColumnDefinition Width="48"/>
+                    <!-- -30s/-60sボタン -->
+                    <ColumnDefinition Width="30"/>
+                    <!-- ブーツとInsightボタン -->
+                </Grid.ColumnDefinitions>
+
+                <!-- ヘッダー部分 -->
+                <Grid Grid.Row="0" Grid.ColumnSpan="4">
+                    <DockPanel LastChildFill="False">
+                        <Button x:Name="btnClose" 
+                                DockPanel.Dock="Right"
+                                Content="✕" Width="20" Height="20"
+                                Click="BtnClose_Click"
+                                Background="Transparent" 
+                                Foreground="White"
+                                FontSize="10"
+                                Margin="0,0,0,0"/>
+                        <Button x:Name="btnSettings" 
+                                DockPanel.Dock="Left"
+                                Click="BtnSettings_Click"
+                                Width="20" Height="20"
+                                Content="⚙"
+                                Foreground="White"
+                                Background="Transparent"
+                                FontSize="10"/>
+                    </DockPanel>
+                </Grid>
+
+                <!-- Top -->
+                <Image Grid.Row="1" Grid.Column="0" Source="/src/assets/TOP.png" Margin="0,20,1,20"/>
+                <Button x:Name="btnTopFlash" Grid.Row="1" Grid.Column="1" 
+                        Click="BtnFlash_Click" MouseUp="BtnFlash_MouseUp" 
+                        MouseWheel="BtnFlash_MouseWheel">
+                    <Button.Background>
+                        <ImageBrush ImageSource="/src/assets/Flash.png"/>
+                    </Button.Background>
+                </Button>
+                <StackPanel Grid.Row="1" Grid.Column="2">
+                    <Button x:Name="btnTop30" Content="-30s" Width="48" Height="32" Margin="0,0,0,0" 
+                            Click="Btn30_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
+                    <Button x:Name="btnTop60" Content="-60s" Width="48" Height="32" 
+                            Click="Btn60_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="3">
+                    <Button x:Name="btnTopBoot" Width="31" Height="31" Margin="0,0,0,0" 
+                            Click="BtnBoot_Click" Background="Transparent" BorderThickness="0" Tag="{x:Null}">
+                        <Image Source="/src/assets/Boots.png" Opacity="0.2"/>
+                    </Button>
+                    <Button x:Name="btnTopIns" Width="31" Height="31" Margin="0,0,0,0"
+                            Click="BtnIns_Click" Background="Transparent" BorderThickness="0" Tag="{x:Null}">
+                        <Image Source="/src/assets/CosmicInsight.png" Opacity="0.2"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- Jungle -->
+                <Image Grid.Row="2" Grid.Column="0" Source="/src/assets/JUNGLE.png" Margin="0,20,1,20"/>
+                <Button x:Name="btnJugFlash" Grid.Row="2" Grid.Column="1" 
+                        Click="BtnFlash_Click" MouseUp="BtnFlash_MouseUp" 
+                        MouseWheel="BtnFlash_MouseWheel">
+                    <Button.Background>
+                        <ImageBrush ImageSource="/src/assets/Flash.png"/>
+                    </Button.Background>
+                </Button>
+                <StackPanel Grid.Row="2" Grid.Column="2">
+                    <Button x:Name="btnJug30" Content="-30s" Width="48" Height="32" Margin="0,0,0,0" 
+                            Click="Btn30_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
+                    <Button x:Name="btnJug60" Content="-60s" Width="48" Height="32" 
+                            Click="Btn60_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
+                </StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="3">
+                    <Button x:Name="btnJugBoot" Width="31" Height="31" Margin="0,0,0,0" 
+                            Click="BtnBoot_Click" Background="Transparent" BorderThickness="0" Tag="{x:Null}">
+                        <Image Source="/src/assets/Boots.png" Opacity="0.2"/>
+                    </Button>
+                    <Button x:Name="btnJugIns" Width="31" Height="31" Margin="0,0,0,0"
+                            Click="BtnIns_Click" Background="Transparent" BorderThickness="0" Tag="{x:Null}">
+                        <Image Source="/src/assets/CosmicInsight.png" Opacity="0.2"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- Mid -->
+                <Image Grid.Row="3" Grid.Column="0" Source="/src/assets/MIDDLE.png" Margin="0,20,1,20"/>
+                <Button x:Name="btnMidFlash" Grid.Row="3" Grid.Column="1" 
+                        Click="BtnFlash_Click" MouseUp="BtnFlash_MouseUp" 
+                        MouseWheel="BtnFlash_MouseWheel">
+                    <Button.Background>
+                        <ImageBrush ImageSource="/src/assets/Flash.png"/>
+                    </Button.Background>
+                </Button>
+                <StackPanel Grid.Row="3" Grid.Column="2">
+                    <Button x:Name="btnMid30" Content="-30s" Width="48" Height="32" Margin="0,0,0,0" 
+                            Click="Btn30_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
+                    <Button x:Name="btnMid60" Content="-60s" Width="48" Height="32" 
+                            Click="Btn60_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
+                </StackPanel>
+                <StackPanel Grid.Row="3" Grid.Column="3">
+                    <Button x:Name="btnMidBoot" Width="31" Height="31" Margin="0,0,0,0" 
+                            Click="BtnBoot_Click" Background="Transparent" BorderThickness="0" Tag="{x:Null}">
+                        <Image Source="/src/assets/Boots.png" Opacity="0.2"/>
+                    </Button>
+                    <Button x:Name="btnMidIns" Width="31" Height="31" Margin="0,0,0,0"
+                            Click="BtnIns_Click" Background="Transparent" BorderThickness="0" Tag="{x:Null}">
+                        <Image Source="/src/assets/CosmicInsight.png" Opacity="0.2"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- Bot -->
+                <Image Grid.Row="4" Grid.Column="0" Source="/src/assets/BOTTOM.png" Margin="0,20,1,20"/>
+                <Button x:Name="btnBotFlash" Grid.Row="4" Grid.Column="1" 
+                        Click="BtnFlash_Click" MouseUp="BtnFlash_MouseUp" 
+                        MouseWheel="BtnFlash_MouseWheel">
+                    <Button.Background>
+                        <ImageBrush ImageSource="/src/assets/Flash.png"/>
+                    </Button.Background>
+                </Button>
+                <StackPanel Grid.Row="4" Grid.Column="2">
+                    <Button x:Name="btnBot30" Content="-30s" Width="48" Height="32" Margin="0,0,0,0" 
+                            Click="Btn30_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
+                    <Button x:Name="btnBot60" Content="-60s" Width="48" Height="32" 
+                            Click="Btn60_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
+                </StackPanel>
+                <StackPanel Grid.Row="4" Grid.Column="3">
+                    <Button x:Name="btnBotBoot" Width="31" Height="31" Margin="0,0,0,0" 
+                            Click="BtnBoot_Click" Background="Transparent" BorderThickness="0" Tag="{x:Null}">
+                        <Image Source="/src/assets/Boots.png" Opacity="0.2"/>
+                    </Button>
+                    <Button x:Name="btnBotIns" Width="31" Height="31" Margin="0,0,0,0"
+                            Click="BtnIns_Click" Background="Transparent" BorderThickness="0" Tag="{x:Null}">
+                        <Image Source="/src/assets/CosmicInsight.png" Opacity="0.2"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- Support -->
+                <Image Grid.Row="5" Grid.Column="0" Source="/src/assets/SUPPORT.png" Margin="0,20,1,20"/>
+                <Button x:Name="btnSupFlash" Grid.Row="5" Grid.Column="1" 
+                        Click="BtnFlash_Click" MouseUp="BtnFlash_MouseUp" 
+                        MouseWheel="BtnFlash_MouseWheel">
+                    <Button.Background>
+                        <ImageBrush ImageSource="/src/assets/Flash.png"/>
+                    </Button.Background>
+                </Button>
+                <StackPanel Grid.Row="5" Grid.Column="2">
+                    <Button x:Name="btnSup30" Content="-30s" Width="48" Height="32" Margin="0,0,0,0" 
+                            Click="Btn30_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
+                    <Button x:Name="btnSup60" Content="-60s" Width="48" Height="32" 
+                            Click="Btn60_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
+                </StackPanel>
+                <StackPanel Grid.Row="5" Grid.Column="3">
+                    <Button x:Name="btnSupBoot" Width="31" Height="31" Margin="0,0,0,0" 
+                            Click="BtnBoot_Click" Background="Transparent" BorderThickness="0" Tag="{x:Null}">
+                        <Image Source="/src/assets/Boots.png" Opacity="0.2"/>
+                    </Button>
+                    <Button x:Name="btnSupIns" Width="31" Height="31" Margin="0,0,0,0"
+                            Click="BtnIns_Click" Background="Transparent" BorderThickness="0" Tag="{x:Null}">
+                        <Image Source="/src/assets/CosmicInsight.png" Opacity="0.2"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Viewbox>
+
+        <!-- Settings Popup -->
+        <Popup x:Name="settingsPopup" 
+               StaysOpen="False"
+               Placement="Custom"
+               AllowsTransparency="True">
+            <Border Background="#FF202020" 
+                    BorderBrush="Gray" 
+                    BorderThickness="1" 
+                    Padding="10">
+                <Grid Width="200">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- 閉じるボタンを含むヘッダー -->
+                    <DockPanel Grid.Row="0" LastChildFill="False">
+                        <TextBlock Text="Scale" 
+                                  Foreground="White" 
+                                  DockPanel.Dock="Left" 
+                                  VerticalAlignment="Center"
+                                  FontSize="12"/>
+                        <Button DockPanel.Dock="Right" 
+                                Content="✕" 
+                                Width="20" Height="20"
+                                Click="CloseSettingsPopup_Click"
+                                Background="#FF87282a" 
+                                Foreground="White"
+                                FontSize="10"
+                                Margin="10,0,0,0"/>
+                    </DockPanel>
+                    
+                    <!-- スケールスライダー -->
+                    <Grid Grid.Row="1" Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Slider x:Name="scaleSlider" 
+                                Minimum="0.5" 
+                                Maximum="2.0" 
+                                Value="1.0"
+                                ValueChanged="ScaleSlider_ValueChanged"
+                                Margin="0,0,10,0"/>
+                        <TextBlock Grid.Column="1" 
+                                  Text="{Binding Value, ElementName=scaleSlider, StringFormat={}{0:F2}}"
+                                  Foreground="White"
+                                  VerticalAlignment="Center"
+                                  FontSize="12"/>
+                    </Grid>
+                    
+                    <CheckBox Grid.Row="2" 
+                              x:Name="minuteFormatCheckBox" 
+                              Content="Show time in MM:SS format" 
+                              IsChecked="{Binding UseMinuteFormat, Mode=TwoWay}"
+                              Margin="0,20,0,0"
+                              Checked="MinuteFormat_Changed"
+                              Unchecked="MinuteFormat_Changed"
+                              Foreground="White"
+                              FontSize="12"/>
+                    
+                    <Button Grid.Row="3" 
+                            Content="Save Settings" 
+                            Click="SaveConfig_Click"
+                            Margin="0,20,0,0"
+                            HorizontalAlignment="Center"
+                            FontSize="12"
+                            Width="100"
+                            Height="25"/>
+                </Grid>
+            </Border>
+        </Popup>
+    </Grid>
+
+    <!-- 要素サイズの定義を変数として保持するためのリソース -->
+    <Window.Resources>
+        <system:Double x:Key="BaseFlashButtonSize">64</system:Double>
+        <system:Double x:Key="BaseCooldownButtonWidth">48</system:Double>
+        <system:Double x:Key="BaseCooldownButtonHeight">28</system:Double>
+        <system:Double x:Key="BaseIconSize">31</system:Double>
+        <system:Double x:Key="BaseLaneIconWidth">32</system:Double>
+        <system:Double x:Key="BaseLaneIconHeight">24</system:Double>
+    </Window.Resources>
+</Window> 

@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="src\assets\Boots.png" />
+    <Resource Include="src\assets\CosmicInsight.png" />
+    <Resource Include="src\assets\Flash.png" />
+    <Resource Include="src\assets\TOP.png" />
+    <Resource Include="src\assets\JUNGLE.png" />
+    <Resource Include="src\assets\MIDDLE.png" />
+    <Resource Include="src\assets\BOTTOM.png" />
+    <Resource Include="src\assets\SUPPORT.png" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+</Project>
