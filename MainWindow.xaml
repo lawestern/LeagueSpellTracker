@@ -278,6 +278,16 @@
                               Foreground="White"
                               Margin="0,0,0,10"/>
                     
+                    <!-- フラッシュ可能時間を表示チェックボックス -->
+                    <CheckBox Grid.Row="3" 
+                              x:Name="showIngameTimeCheckBox" 
+                              Content="フラッシュ可能時間を表示" 
+                              IsChecked="{Binding ShowIngameTime}"
+                              Checked="ShowIngameTime_Changed" 
+                              Unchecked="ShowIngameTime_Changed"
+                              Foreground="White"
+                              Margin="0,0,0,10"/>
+                    
                     <!-- 保存ボタン -->
                     <Button Grid.Row="4" 
                             Content="Save Settings" 

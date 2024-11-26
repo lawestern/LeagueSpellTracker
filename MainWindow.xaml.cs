@@ -9,6 +9,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media.Effects;
+using System.Windows.Documents;
 
 namespace LeagueSpellTracker
 {
@@ -24,7 +25,8 @@ namespace LeagueSpellTracker
         private DispatcherTimer _inGameTimer;
         private int _inGameSeconds = 0;
         private DispatcherTimer inGameTimerDispatcher;  // クラスレベルで変数を定義
-
+        private readonly Dictionary<string, TimerData> _timerData;
+        private int _gameTime;
 
         public MainWindow()
         {
@@ -65,6 +67,16 @@ namespace LeagueSpellTracker
             
             // 初期状態は停止中なので赤色に設定
             inGameTimer.Foreground = Brushes.Red;
+
+            _timerData = new Dictionary<string, TimerData>
+            {
+                { "InGame", new TimerData("InGame") },
+                { "Top", new TimerData("Top") },
+                { "Jungle", new TimerData("Jungle") },
+                { "Mid", new TimerData("Mid") },
+                { "Bot", new TimerData("Bot") },
+                { "Support", new TimerData("Support") }
+            };
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -143,6 +155,7 @@ namespace LeagueSpellTracker
         private void BtnFlash_Click(object sender, RoutedEventArgs e)
         {
             Button button = (Button)sender;
+            string lane = GetLaneFromButton(button);
             
             // 現在の状態に基づいて開始時間を取得
             int startCooldown = GetFlashCooldown(button);
@@ -152,9 +165,15 @@ namespace LeagueSpellTracker
             ImageBrush imageBrush = (ImageBrush)button.Background;
             imageBrush.Opacity = 0.2;
 
+            // TimerDataの更新
+            var timer = _timerData[lane];
+            timer.RemainingSeconds = adjustedCooldown;
+            timer.IsActive = true;
+            timer.StartTime = DateTime.Now;
+
+            // UIの更新
             TextBlock timerText = new TextBlock
             {
-                Text = FormatTime(adjustedCooldown),
                 Foreground = Brushes.White,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -172,7 +191,8 @@ namespace LeagueSpellTracker
             };
             
             button.Content = timerText;
-            StartFlashTimer(button, adjustedCooldown);
+            UpdateTimerDisplay(button, lane);
+            StartFlashTimer(button, lane, adjustedCooldown);
         }
 
         private void BtnFlash_MouseUp(object sender, MouseButtonEventArgs e)
@@ -198,31 +218,29 @@ namespace LeagueSpellTracker
         private void BtnFlash_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             Button button = (Button)sender;
-            if (button.Content is TextBlock timerText)
+            string lane = GetLaneFromButton(button);
+            var timer = _timerData[lane];
+
+            int adjustment = e.Delta > 0 ? 5 : -5;
+            timer.RemainingSeconds = Math.Max(0, timer.RemainingSeconds + adjustment);
+            
+            if (timer.RemainingSeconds > 0 && !timer.IsActive)
             {
-                // 現在の秒数を取得
-                int currentSeconds;
-                if (timerText.Text.Contains(":"))
-                {
-                    string[] parts = timerText.Text.Split(':');
-                    currentSeconds = (int.Parse(parts[0])) * 60 + int.Parse(parts[1]);
-                }
-                else
-                {
-                    currentSeconds = int.Parse(timerText.Text);
-                }
-
-                // ホイール1回転で5秒調整（上で増加、下で減少）
-                int adjustment = e.Delta > 0 ? 5 : -5;
-                int newSeconds = Math.Max(0, currentSeconds + adjustment);
-
-                // タイマーを更新
-                if (flashTimers.ContainsKey(button))
-                {
-                    flashTimers[button].Stop();
-                    StartFlashTimer(button, newSeconds);
-                }
+                timer.IsActive = true;
+                timer.StartTime = DateTime.Now;
             }
+
+            UpdateTimerDisplay(button, lane);
+        }
+
+        private string GetLaneFromButton(Button button)
+        {
+            if (button == btnTopFlash) return "Top";
+            if (button == btnJugFlash) return "Jungle";
+            if (button == btnMidFlash) return "Mid";
+            if (button == btnBotFlash) return "Bot";
+            if (button == btnSupFlash) return "Support";
+            return string.Empty;
         }
 
         private Button GetFlashButtonForTimeButton(Button timeButton)
@@ -246,80 +264,12 @@ namespace LeagueSpellTracker
 
         private void Btn30_Click(object sender, RoutedEventArgs e)
         {
-            Button timeButton = (Button)sender;
-            Button flashButton = GetFlashButtonForTimeButton(timeButton);
-            
-            if (flashButton != null)
-            {
-                // 現在の状態に基づいて開始時間を取得
-                int startCooldown = GetFlashCooldown(flashButton);
-                // 30秒を引いた時間からスタート
-                int adjustedCooldown = Math.Max(0, startCooldown - 30);
-                
-                ImageBrush imageBrush = (ImageBrush)flashButton.Background;
-                imageBrush.Opacity = 0.2;
-
-                TextBlock timerText = new TextBlock
-                {
-                    Text = FormatTime(adjustedCooldown),
-                    Foreground = Brushes.White,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    FontFamily = new FontFamily("Consolas"),
-                    FontSize = 18,
-                    FontWeight = FontWeights.Bold,
-                    Effect = new DropShadowEffect
-                    {
-                        ShadowDepth = 1,
-                        Direction = 320,
-                        Color = Colors.Black,
-                        Opacity = 0.5,
-                        BlurRadius = 2
-                    }
-                };
-                
-                flashButton.Content = timerText;
-                StartFlashTimer(flashButton, adjustedCooldown);
-            }
+            StartFlashTimerWithAdjustment((Button)sender, 30);
         }
 
         private void Btn60_Click(object sender, RoutedEventArgs e)
         {
-            Button timeButton = (Button)sender;
-            Button flashButton = GetFlashButtonForTimeButton(timeButton);
-            
-            if (flashButton != null)
-            {
-                // 現在の状態に基づて開始時間を取得
-                int startCooldown = GetFlashCooldown(flashButton);
-                // 60秒を引いた時間からスタート
-                int adjustedCooldown = Math.Max(0, startCooldown - 60);
-                
-                ImageBrush imageBrush = (ImageBrush)flashButton.Background;
-                imageBrush.Opacity = 0.2;
-
-                TextBlock timerText = new TextBlock
-                {
-                    Text = FormatTime(adjustedCooldown),
-                    Foreground = Brushes.White,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    FontFamily = new FontFamily("Consolas"),
-                    FontSize = 18,
-                    FontWeight = FontWeights.Bold,
-                    Effect = new DropShadowEffect
-                    {
-                        ShadowDepth = 1,
-                        Direction = 320,
-                        Color = Colors.Black,
-                        Opacity = 0.5,
-                        BlurRadius = 2
-                    }
-                };
-                
-                flashButton.Content = timerText;
-                StartFlashTimer(flashButton, adjustedCooldown);
-            }
+            StartFlashTimerWithAdjustment((Button)sender, 60);
         }
 
         private void BtnBoot_Click(object sender, RoutedEventArgs e)
@@ -430,7 +380,7 @@ namespace LeagueSpellTracker
             return insightButton.Tag != null && insightButton.Tag.ToString() == "active";
         }
 
-        private void StartFlashTimer(Button button, int cooldown)
+        private void StartFlashTimer(Button button, string lane, int cooldown)
         {
             if (flashTimers.ContainsKey(button))
             {
@@ -438,52 +388,35 @@ namespace LeagueSpellTracker
                 flashTimers.Remove(button);
             }
 
-            TextBlock timerText = new TextBlock
-            {
-                Text = FormatTime(cooldown),
-                Foreground = Brushes.White,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                FontFamily = new FontFamily("Consolas"),
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                Effect = new DropShadowEffect
-                {
-                    ShadowDepth = 1,
-                    Direction = 320,
-                    Color = Colors.Black,
-                    Opacity = 0.5,
-                    BlurRadius = 2
-                }
-            };
-            
-            button.Content = timerText;
+            var timer = _timerData[lane];
+            timer.RemainingSeconds = cooldown;
 
-            DispatcherTimer timer = new DispatcherTimer
+            DispatcherTimer dispatcherTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(1)
             };
             
-            int remainingTime = cooldown;
-            timer.Tick += (sender, e) =>
+            dispatcherTimer.Tick += (sender, e) =>
             {
-                remainingTime--;
-                if (remainingTime < 0)
+                timer.RemainingSeconds--;
+                if (timer.RemainingSeconds < 0)
                 {
-                    timer.Stop();
+                    dispatcherTimer.Stop();
                     button.Content = null;
                     ImageBrush imageBrush = (ImageBrush)button.Background;
                     imageBrush.Opacity = 1.0;
                     flashTimers.Remove(button);
+                    timer.IsActive = false;
+                    timer.StartTime = null;
                 }
                 else
                 {
-                    timerText.Text = FormatTime(remainingTime);
+                    UpdateTimerDisplay(button, lane);
                 }
             };
 
-            flashTimers[button] = timer;
-            timer.Start();
+            flashTimers[button] = dispatcherTimer;
+            dispatcherTimer.Start();
         }
 
         private void MinuteFormat_Changed(object sender, RoutedEventArgs e)
@@ -497,20 +430,8 @@ namespace LeagueSpellTracker
                 if (timer.Key.Content is TextBlock timerText)
                 {
                     string currentText = timerText.Text;
-                    int seconds;
-                    
-                    if (currentText.Contains(":"))
-                    {
-                        // 分：秒形式から秒数に変換
-                        string[] parts = currentText.Split(':');
-                        seconds = (int.Parse(parts[0]) * 60) + int.Parse(parts[1]);
-                    }
-                    else
-                    {
-                        seconds = int.Parse(currentText);
-                    }
-                    
-                    timerText.Text = FormatTime(seconds);
+                    int remainingSeconds = GetRemainingSeconds(currentText);
+                    UpdateTimerDisplay(timer.Key, GetLaneFromButton(timer.Key));  // remainingSecondsではなくレーン名を渡す
                 }
             }
         }
@@ -527,8 +448,36 @@ namespace LeagueSpellTracker
 
         private void InGameTimer_Tick(object sender, EventArgs e)
         {
-            _inGameSeconds++;
-            UpdateInGameTimerDisplay();
+            _gameTime++;
+            var timer = _timerData["InGame"];
+            timer.RemainingSeconds = _gameTime;
+            timer.IsActive = true;
+            
+            int minutes = _gameTime / 60;
+            int seconds = _gameTime % 60;
+            inGameTimer.Text = $"{minutes}:{seconds:D2}";
+            
+            // 各レーンのタイマーも更新
+            foreach (var lane in new[] { "Top", "Jungle", "Mid", "Bot", "Support" })
+            {
+                if (_timerData[lane].IsActive)
+                {
+                    UpdateTimerDisplay(GetButtonFromLane(lane), lane);
+                }
+            }
+        }
+
+        private Button GetButtonFromLane(string lane)
+        {
+            return lane switch
+            {
+                "Top" => btnTopFlash,
+                "Jungle" => btnJugFlash,
+                "Mid" => btnMidFlash,
+                "Bot" => btnBotFlash,
+                "Support" => btnSupFlash,
+                _ => null
+            };
         }
 
         private void UpdateInGameTimerDisplay()
@@ -540,15 +489,19 @@ namespace LeagueSpellTracker
 
         private void InGameTimer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            var timer = _timerData["InGame"];
+            
             if (inGameTimerDispatcher.IsEnabled)
             {
-                inGameTimerDispatcher.Stop();  // タイマーが動いている場合は停止
-                inGameTimer.Foreground = Brushes.Red;  // 停止中は赤色
+                inGameTimerDispatcher.Stop();
+                timer.IsActive = false;
+                inGameTimer.Foreground = Brushes.Red;
             }
             else
             {
-                inGameTimerDispatcher.Start(); // タイマーが停止している場合は開始
-                inGameTimer.Foreground = Brushes.White;  // 動作中は白色
+                inGameTimerDispatcher.Start();
+                timer.IsActive = true;
+                inGameTimer.Foreground = Brushes.White;
             }
             e.Handled = true;
         }
@@ -557,40 +510,160 @@ namespace LeagueSpellTracker
         {
             if (e.ChangedButton == MouseButton.Middle)
             {
-                _inGameTimer.Stop();
-                _inGameSeconds = 0;
-                UpdateInGameTimerDisplay();
+                inGameTimerDispatcher.Stop();
+                _gameTime = 0;
+                var timer = _timerData["InGame"];
+                timer.RemainingSeconds = 0;
+                timer.IsActive = false;
+                inGameTimer.Text = "0:00";
+                inGameTimer.Foreground = Brushes.Red;
             }
         }
 
         private void InGameTimer_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             int adjustment = e.Delta > 0 ? 5 : -5;
-            _inGameSeconds = Math.Max(0, _inGameSeconds + adjustment);
-            UpdateInGameTimerDisplay();
+            _gameTime = Math.Max(0, _gameTime + adjustment);
+            
+            var timer = _timerData["InGame"];
+            timer.RemainingSeconds = _gameTime;
+            
+            int minutes = _gameTime / 60;
+            int seconds = _gameTime % 60;
+            inGameTimer.Text = $"{minutes}:{seconds:D2}";
+            
+            // 他のアクティブなタイマーの表示も更新
+            UpdateAllFlashTimers();
         }
 
-        private void UpdateTimerDisplay(Button button)
+        private void UpdateTimerDisplay(Button button, string lane)
         {
-            if (!(button.Content is TextBlock timerText)) return;
+            var timer = _timerData[lane];
+            if (!timer.IsActive) return;
+
+            TextBlock timerText = (TextBlock)button.Content;
+            string mainTime = FormatTime(timer.RemainingSeconds);
             
-            string currentText = timerText.Text;
-            int remainingSeconds;
-            
-            if (currentText.Contains(":"))
+            if (_config.ShowIngameTime && _timerData["InGame"].IsActive)
             {
-                string[] parts = currentText.Split(':');
-                remainingSeconds = (int.Parse(parts[0].Trim()) * 60) + int.Parse(parts[1].Trim());
+                int flashAvailableTime = _gameTime + timer.RemainingSeconds;
+                flashAvailableTime = (flashAvailableTime / 10) * 10;
+                int minutes = flashAvailableTime / 60;
+                int seconds = flashAvailableTime % 60;
+                
+                timerText.Inlines.Clear();
+                timerText.Inlines.Add(new Run(mainTime));
+                timerText.Inlines.Add(new Run($"\n({minutes}:{seconds:D2})")
+                {
+                    FontSize = timerText.FontSize - 2,
+                    Foreground = new SolidColorBrush(Color.FromRgb(255, 192, 203))
+                });
             }
             else
             {
-                remainingSeconds = int.Parse(currentText.Trim());
+                timerText.Inlines.Clear();
+                timerText.Inlines.Add(new Run(mainTime));
+            }
+        }
+
+        private void ShowIngameTime_Changed(object sender, RoutedEventArgs e)
+        {
+            _config.ShowIngameTime = showIngameTimeCheckBox.IsChecked ?? false;
+            _config.Save();
+            
+            // 現在実行中のタイマーの表示を更新
+            UpdateAllFlashTimers();
+        }
+
+        private void UpdateAllFlashTimers()
+        {
+            foreach (var timer in flashTimers)
+            {
+                if (timer.Key.Content is TextBlock timerText)
+                {
+                    string currentText = timerText.Text;
+                    int remainingSeconds = GetRemainingSeconds(currentText);
+                    UpdateTimerDisplay(timer.Key, GetLaneFromButton(timer.Key));  // remainingSecondsではなくレーン名を渡す
+                }
+            }
+        }
+
+        private int GetRemainingSeconds(string timeText)
+        {
+            // 空文字列や null チェック
+            if (string.IsNullOrEmpty(timeText))
+                return 0;
+
+            // 改行で分割して最初の行（メインの時間）を取得
+            string[] lines = timeText.Split('\n');
+            string mainTime = lines[0].Trim();
+            
+            // かっこや余分な空白を除去
+            if (mainTime.Contains("("))
+            {
+                mainTime = mainTime.Split('(')[0].Trim();
             }
             
-            if (remainingSeconds > 0)
+            // MM:SS形式かどうかをチェック
+            if (mainTime.Contains(":"))
             {
-                remainingSeconds--;
-                timerText.Text = FormatTime(remainingSeconds);
+                string[] parts = mainTime.Split(':');
+                if (parts.Length == 2 && int.TryParse(parts[0], out int minutes) && int.TryParse(parts[1], out int seconds))
+                {
+                    return (minutes * 60) + seconds;
+                }
+            }
+            
+            // 単純な秒数形式の場合
+            if (int.TryParse(mainTime, out int totalSeconds))
+            {
+                return totalSeconds;
+            }
+            
+            // パースに失敗した場合は0を返す
+            return 0;
+        }
+
+        private void StartFlashTimerWithAdjustment(Button timeButton, int adjustment)
+        {
+            Button flashButton = GetFlashButtonForTimeButton(timeButton);
+            
+            if (flashButton != null)
+            {
+                string lane = GetLaneFromButton(flashButton);
+                int startCooldown = GetFlashCooldown(flashButton);
+                int adjustedCooldown = Math.Max(0, startCooldown - adjustment);
+                
+                ImageBrush imageBrush = (ImageBrush)flashButton.Background;
+                imageBrush.Opacity = 0.2;
+
+                // TimerDataの更新
+                var timer = _timerData[lane];
+                timer.RemainingSeconds = adjustedCooldown;
+                timer.IsActive = true;
+                timer.StartTime = DateTime.Now;
+
+                TextBlock timerText = new TextBlock
+                {
+                    Foreground = Brushes.White,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    FontFamily = new FontFamily("Consolas"),
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    Effect = new DropShadowEffect
+                    {
+                        ShadowDepth = 1,
+                        Direction = 320,
+                        Color = Colors.Black,
+                        Opacity = 0.5,
+                        BlurRadius = 2
+                    }
+                };
+                
+                flashButton.Content = timerText;
+                UpdateTimerDisplay(flashButton, lane);
+                StartFlashTimer(flashButton, lane, adjustedCooldown);
             }
         }
     }
