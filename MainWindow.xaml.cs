@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media.Effects;
 
 namespace LeagueSpellTracker
 {
@@ -20,6 +21,9 @@ namespace LeagueSpellTracker
         private Config _config;
         private Dictionary<Button, DispatcherTimer> flashTimers = new Dictionary<Button, DispatcherTimer>();
         private bool _isLoadingConfig = false;
+        private DispatcherTimer _inGameTimer;
+        private int _inGameSeconds = 0;
+        private DispatcherTimer inGameTimerDispatcher;  // クラスレベルで変数を定義
 
 
         public MainWindow()
@@ -49,6 +53,18 @@ namespace LeagueSpellTracker
             // DataContextを設定
             _config = Config.Load();
             this.DataContext = _config;
+            
+            _inGameTimer = new DispatcherTimer();
+            _inGameTimer.Interval = TimeSpan.FromSeconds(1);
+            _inGameTimer.Tick += InGameTimer_Tick;
+            
+            // タイマーの初期化
+            inGameTimerDispatcher = new DispatcherTimer();
+            inGameTimerDispatcher.Interval = TimeSpan.FromSeconds(1);
+            inGameTimerDispatcher.Tick += InGameTimer_Tick;
+            
+            // 初期状態は停止中なので赤色に設定
+            inGameTimer.Foreground = Brushes.Red;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -93,7 +109,7 @@ namespace LeagueSpellTracker
                 this.Width = scaledWidth;
                 this.Height = scaledHeight;
 
-                // 保存した位置に戻す
+                // 保存した位置に戻
                 this.Left = left;
                 this.Top = top;
             }
@@ -142,7 +158,17 @@ namespace LeagueSpellTracker
                 Foreground = Brushes.White,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
-                FontSize = 16
+                FontFamily = new FontFamily("Consolas"),
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                Effect = new DropShadowEffect
+                {
+                    ShadowDepth = 1,
+                    Direction = 320,
+                    Color = Colors.Black,
+                    Opacity = 0.5,
+                    BlurRadius = 2
+                }
             };
             
             button.Content = timerText;
@@ -151,7 +177,7 @@ namespace LeagueSpellTracker
 
         private void BtnFlash_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Middle && e.ButtonState == MouseButtonState.Released)  // ホイールクリックのみ
+            if (e.ChangedButton == MouseButton.Middle && e.ButtonState == MouseButtonState.Released)  // ホイールクリクのみ
             {
                 Button button = (Button)sender;
                 ImageBrush imageBrush = (ImageBrush)button.Background;
@@ -239,7 +265,17 @@ namespace LeagueSpellTracker
                     Foreground = Brushes.White,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    FontSize = 16
+                    FontFamily = new FontFamily("Consolas"),
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    Effect = new DropShadowEffect
+                    {
+                        ShadowDepth = 1,
+                        Direction = 320,
+                        Color = Colors.Black,
+                        Opacity = 0.5,
+                        BlurRadius = 2
+                    }
                 };
                 
                 flashButton.Content = timerText;
@@ -268,7 +304,17 @@ namespace LeagueSpellTracker
                     Foreground = Brushes.White,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    FontSize = 16
+                    FontFamily = new FontFamily("Consolas"),
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    Effect = new DropShadowEffect
+                    {
+                        ShadowDepth = 1,
+                        Direction = 320,
+                        Color = Colors.Black,
+                        Opacity = 0.5,
+                        BlurRadius = 2
+                    }
                 };
                 
                 flashButton.Content = timerText;
@@ -389,16 +435,40 @@ namespace LeagueSpellTracker
             if (flashTimers.ContainsKey(button))
             {
                 flashTimers[button].Stop();
+                flashTimers.Remove(button);
             }
 
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
+            TextBlock timerText = new TextBlock
+            {
+                Text = FormatTime(cooldown),
+                Foreground = Brushes.White,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                FontFamily = new FontFamily("Consolas"),
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                Effect = new DropShadowEffect
+                {
+                    ShadowDepth = 1,
+                    Direction = 320,
+                    Color = Colors.Black,
+                    Opacity = 0.5,
+                    BlurRadius = 2
+                }
+            };
+            
+            button.Content = timerText;
+
+            DispatcherTimer timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
             
             int remainingTime = cooldown;
             timer.Tick += (sender, e) =>
             {
                 remainingTime--;
-                if (remainingTime <= 0)
+                if (remainingTime < 0)
                 {
                     timer.Stop();
                     button.Content = null;
@@ -408,13 +478,9 @@ namespace LeagueSpellTracker
                 }
                 else
                 {
-                    ((TextBlock)button.Content).Text = FormatTime(remainingTime);
+                    timerText.Text = FormatTime(remainingTime);
                 }
             };
-
-            // 初期表示を設定
-            TextBlock timerText = (TextBlock)button.Content;
-            timerText.Text = FormatTime(remainingTime);
 
             flashTimers[button] = timer;
             timer.Start();
@@ -457,6 +523,75 @@ namespace LeagueSpellTracker
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
             return $"{minutes}:{seconds:D2}";
+        }
+
+        private void InGameTimer_Tick(object sender, EventArgs e)
+        {
+            _inGameSeconds++;
+            UpdateInGameTimerDisplay();
+        }
+
+        private void UpdateInGameTimerDisplay()
+        {
+            int minutes = _inGameSeconds / 60;
+            int seconds = _inGameSeconds % 60;
+            inGameTimer.Text = $"{minutes}:{seconds:D2}";
+        }
+
+        private void InGameTimer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (inGameTimerDispatcher.IsEnabled)
+            {
+                inGameTimerDispatcher.Stop();  // タイマーが動いている場合は停止
+                inGameTimer.Foreground = Brushes.Red;  // 停止中は赤色
+            }
+            else
+            {
+                inGameTimerDispatcher.Start(); // タイマーが停止している場合は開始
+                inGameTimer.Foreground = Brushes.White;  // 動作中は白色
+            }
+            e.Handled = true;
+        }
+
+        private void InGameTimer_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle)
+            {
+                _inGameTimer.Stop();
+                _inGameSeconds = 0;
+                UpdateInGameTimerDisplay();
+            }
+        }
+
+        private void InGameTimer_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            int adjustment = e.Delta > 0 ? 5 : -5;
+            _inGameSeconds = Math.Max(0, _inGameSeconds + adjustment);
+            UpdateInGameTimerDisplay();
+        }
+
+        private void UpdateTimerDisplay(Button button)
+        {
+            if (!(button.Content is TextBlock timerText)) return;
+            
+            string currentText = timerText.Text;
+            int remainingSeconds;
+            
+            if (currentText.Contains(":"))
+            {
+                string[] parts = currentText.Split(':');
+                remainingSeconds = (int.Parse(parts[0].Trim()) * 60) + int.Parse(parts[1].Trim());
+            }
+            else
+            {
+                remainingSeconds = int.Parse(currentText.Trim());
+            }
+            
+            if (remainingSeconds > 0)
+            {
+                remainingSeconds--;
+                timerText.Text = FormatTime(remainingSeconds);
+            }
         }
     }
 } 

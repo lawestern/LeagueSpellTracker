@@ -41,7 +41,7 @@
 
                 <!-- ヘッダー部分 -->
                 <Grid Grid.Row="0" Grid.ColumnSpan="4">
-                    <DockPanel LastChildFill="False">
+                    <DockPanel LastChildFill="True">
                         <Button x:Name="btnClose" 
                                 DockPanel.Dock="Right"
                                 Content="✕" Width="20" Height="20"
@@ -58,6 +58,26 @@
                                 Foreground="White"
                                 Background="Transparent"
                                 FontSize="10"/>
+                        <TextBlock x:Name="inGameTimer"
+                                Text="0:00"
+                                Foreground="White"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                FontFamily="Consolas"
+                                FontSize="16"
+                                FontWeight="Bold"
+                                MouseLeftButtonDown="InGameTimer_MouseLeftButtonDown"
+                                MouseUp="InGameTimer_MouseUp"
+                                MouseWheel="InGameTimer_MouseWheel">
+                            <TextBlock.Effect>
+                                <DropShadowEffect
+                                    ShadowDepth="1"
+                                    Direction="320"
+                                    Color="Black"
+                                    Opacity="0.5"
+                                    BlurRadius="2"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
                     </DockPanel>
                 </Grid>
 
@@ -72,7 +92,8 @@
                 </Button>
                 <StackPanel Grid.Row="1" Grid.Column="2">
                     <Button x:Name="btnTop30" Content="-30s" Width="48" Height="32" Margin="0,0,0,0" 
-                            Click="Btn30_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
+                            Click="Btn30_Click" Background="#FF404040" Foreground="White" FontSize="14">
+                    </Button>
                     <Button x:Name="btnTop60" Content="-60s" Width="48" Height="32" 
                             Click="Btn60_Click" Background="#FF404040" Foreground="White" FontSize="14"/>
                 </StackPanel>
@@ -206,12 +227,13 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     
-                    <!-- 閉じるボタンを含むヘッダー -->
-                    <DockPanel Grid.Row="0" LastChildFill="False">
+                    <!-- スケール設定 -->
+                    <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,10">
                         <TextBlock Text="Scale" 
                                   Foreground="White" 
                                   DockPanel.Dock="Left" 
@@ -228,7 +250,7 @@
                     </DockPanel>
                     
                     <!-- スケールスライダー -->
-                    <Grid Grid.Row="1" Margin="0,10,0,0">
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
@@ -246,20 +268,21 @@
                                   FontSize="12"/>
                     </Grid>
                     
+                    <!-- MM:SS形式チェックボックス -->
                     <CheckBox Grid.Row="2" 
                               x:Name="minuteFormatCheckBox" 
-                              Content="Show time in MM:SS format" 
-                              IsChecked="{Binding UseMinuteFormat, Mode=TwoWay}"
-                              Margin="0,20,0,0"
-                              Checked="MinuteFormat_Changed"
+                              Content="MM:SS形式で表示" 
+                              IsChecked="{Binding UseMinuteFormat}"
+                              Checked="MinuteFormat_Changed" 
                               Unchecked="MinuteFormat_Changed"
                               Foreground="White"
-                              FontSize="12"/>
+                              Margin="0,0,0,10"/>
                     
-                    <Button Grid.Row="3" 
+                    <!-- 保存ボタン -->
+                    <Button Grid.Row="4" 
                             Content="Save Settings" 
                             Click="SaveConfig_Click"
-                            Margin="0,20,0,0"
+                            Margin="0,10,0,0"
                             HorizontalAlignment="Center"
                             FontSize="12"
                             Width="100"
