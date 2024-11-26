@@ -42,19 +42,19 @@
                 <!-- ヘッダー部分 -->
                 <Grid Grid.Row="0" Grid.ColumnSpan="4">
                     <DockPanel LastChildFill="True">
-                        <Button x:Name="btnClose" 
-                                DockPanel.Dock="Right"
-                                Content="✕" Width="20" Height="20"
-                                Click="BtnClose_Click"
-                                Background="Transparent" 
-                                Foreground="White"
-                                FontSize="10"
-                                Margin="0,0,0,0"/>
                         <Button x:Name="btnSettings" 
-                                DockPanel.Dock="Left"
+                                DockPanel.Dock="Right"
                                 Click="BtnSettings_Click"
                                 Width="20" Height="20"
                                 Content="⚙"
+                                Foreground="White"
+                                Background="Transparent"
+                                FontSize="10"/>
+                        <Button x:Name="btnQuickCopy" 
+                                DockPanel.Dock="Left"
+                                Click="BtnQuickCopy_Click"
+                                Width="20" Height="20"
+                                Content="📋"
                                 Foreground="White"
                                 Background="Transparent"
                                 FontSize="10"/>
@@ -230,8 +230,9 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    
+
                     <!-- スケール設定 -->
                     <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,10">
                         <TextBlock Text="Scale" 
@@ -248,7 +249,7 @@
                                 FontSize="10"
                                 Margin="10,0,0,0"/>
                     </DockPanel>
-                    
+
                     <!-- スケールスライダー -->
                     <Grid Grid.Row="1" Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
@@ -267,8 +268,8 @@
                                   VerticalAlignment="Center"
                                   FontSize="12"/>
                     </Grid>
-                    
-                    <!-- MM:SS形式チェックボックス -->
+
+                    <!-- MM:SS��式チェックボックス -->
                     <CheckBox Grid.Row="2" 
                               x:Name="minuteFormatCheckBox" 
                               Content="MM:SS形式で表示" 
@@ -277,7 +278,7 @@
                               Unchecked="MinuteFormat_Changed"
                               Foreground="White"
                               Margin="0,0,0,10"/>
-                    
+
                     <!-- フラッシュ可能時間を表示チェックボックス -->
                     <CheckBox Grid.Row="3" 
                               x:Name="showIngameTimeCheckBox" 
@@ -287,16 +288,25 @@
                               Unchecked="ShowIngameTime_Changed"
                               Foreground="White"
                               Margin="0,0,0,10"/>
-                    
+
                     <!-- 保存ボタン -->
                     <Button Grid.Row="4" 
                             Content="Save Settings" 
                             Click="SaveConfig_Click"
-                            Margin="0,10,0,0"
+                            Margin="0,10,0,10"
                             HorizontalAlignment="Center"
                             FontSize="12"
                             Width="100"
                             Height="25"/>
+
+                    <!-- 終了ボタン -->
+                    <Button Grid.Row="5" 
+                            Content="終了"
+                            Click="BtnClose_Click"
+                            Height="30"
+                            Background="#4C000000"
+                            Foreground="White"
+                            BorderBrush="#4CFFFFFF"/>
                 </Grid>
             </Border>
         </Popup>

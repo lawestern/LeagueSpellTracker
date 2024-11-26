@@ -197,16 +197,23 @@ namespace LeagueSpellTracker
 
         private void BtnFlash_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Middle && e.ButtonState == MouseButtonState.Released)  // ホイールクリクのみ
+            if (e.ChangedButton == MouseButton.Middle && e.ButtonState == MouseButtonState.Released)
             {
                 Button button = (Button)sender;
+                string lane = GetLaneFromButton(button);
+                
+                // タイマーデータをリセット
+                var timer = _timerData[lane];
+                timer.IsActive = false;
+                timer.RemainingSeconds = 0;
+                timer.StartTime = null;
+
+                // UIをリセット
                 ImageBrush imageBrush = (ImageBrush)button.Background;
                 imageBrush.Opacity = 1.0;
-                
-                // タイマーテキストを削除
                 button.Content = null;
-                
-                // タイマーが存在する場合は停止
+
+                // タイマーが存在する場合は停止して削除
                 if (flashTimers.ContainsKey(button))
                 {
                     flashTimers[button].Stop();
@@ -541,6 +548,28 @@ namespace LeagueSpellTracker
             var timer = _timerData[lane];
             if (!timer.IsActive) return;
 
+            // Contentがnullの場合は新しいTextBlockを作成
+            if (button.Content == null)
+            {
+                button.Content = new TextBlock
+                {
+                    Foreground = Brushes.White,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    FontFamily = new FontFamily("Consolas"),
+                    FontSize = 18,
+                    FontWeight = FontWeights.Bold,
+                    Effect = new DropShadowEffect
+                    {
+                        ShadowDepth = 1,
+                        Direction = 320,
+                        Color = Colors.Black,
+                        Opacity = 0.5,
+                        BlurRadius = 2
+                    }
+                };
+            }
+
             TextBlock timerText = (TextBlock)button.Content;
             string mainTime = FormatTime(timer.RemainingSeconds);
             
@@ -664,6 +693,39 @@ namespace LeagueSpellTracker
                 flashButton.Content = timerText;
                 UpdateTimerDisplay(flashButton, lane);
                 StartFlashTimer(flashButton, lane, adjustedCooldown);
+            }
+        }
+
+        private void BtnQuickCopy_Click(object sender, RoutedEventArgs e)
+        {
+            var activeTimers = _timerData
+                .Where(kvp => kvp.Key != "InGame" && kvp.Value.IsActive)
+                .OrderBy(kvp => _gameTime + kvp.Value.RemainingSeconds)  // フラッシュアップ時間でソート
+                .ToList();
+
+            if (!activeTimers.Any() || !_timerData["InGame"].IsActive)
+                return;
+
+            var copyTexts = new List<string>();
+
+            foreach (var timer in activeTimers)
+            {
+                int flashAvailableTime = _gameTime + timer.Value.RemainingSeconds;
+                flashAvailableTime = (flashAvailableTime / 10) * 10;  // 10秒単位で切り下げ
+                int minutes = flashAvailableTime / 60;
+                int seconds = flashAvailableTime % 60;
+                
+                copyTexts.Add($"{timer.Key} {minutes:D2}:{seconds:D2} f");
+            }
+
+            string finalText = string.Join(" / ", copyTexts);
+            try
+            {
+                System.Windows.Clipboard.SetText(finalText);
+            }
+            catch (Exception)
+            {
+                // クリップボードへのアクセスが失敗した場合は何もしない
             }
         }
     }
